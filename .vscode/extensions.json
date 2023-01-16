@@ -1,0 +1,18 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
+  // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+  // List of extensions which should be recommended for users of this workspace.
+  // Can be found on https://marketplace.visualstudio.com/
+  "recommendations": [
+    // "humao.rest-client",                         // use document type HTTP to create HTTP from text. 
+    // "msazurermtools.azurerm-vscode-tools",       // Tools for ARM templates
+    // "ms-azuretools.vscode-bicep",                // Tools for Bicep templates
+    // "ms-vscode.powershell",                      // PowerShell Language Support
+    // "bcanzanella.openmatchingfiles",             // Quickly open all files with the same name
+    "ms-azure-devops.azure-pipelines",           // Azure Devops Pipeline Yaml support. 
+    "oderwat.indent-rainbow",                    // Colored indenting indicator. 
+    "ni.azdo-wiki-md"                            // Renders Azure Devops Markdown Wiki tags in Visual Studio Code  
+  ],
+  // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
+  "unwantedRecommendations": []
+}

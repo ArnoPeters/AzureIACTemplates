@@ -1,0 +1,16 @@
+next-version: 0.1.0
+assembly-versioning-scheme: MajorMinorPatch
+assembly-file-versioning-format: '{env:BUILD_BUILDNUMBER}'
+assembly-informational-format: '{MajorMinorPatch}{env:BUILD_PR_SOURCEBRANCH}'
+mode: ContinuousDelivery #https://gitversion.readthedocs.io/en/latest/input/docs/reference/versioning-modes/versioning-mode/ #Used to compute version until tagged
+increment: Inherit
+
+tag-prefix: '[vV]'
+
+commit-message-incrementing: Enabled  #todo: is this optional?
+commit-date-format: 'yyyy-MM-dd'  #todo: is this optional?
+
+branches:
+  master:
+    regex: ^master$|^main$
+    tag: ''

@@ -1,0 +1,36 @@
+name: $(date:yyyy.M.d)$(rev:.r)
+trigger:
+  batch: 'true'
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - /.vscode/*
+    - /*.md
+
+resources:
+  repositories:
+  - repository: self
+    clean: true
+  - repository: yamlTemplates
+    type: github
+    ref: AzDO/AzureCLIdeployment
+    endpoint: ArnoPeters
+    name: "ArnoPeters/Pipelines"    
+
+pool:
+  vmImage: 'ubuntu-latest'
+  
+variables:
+- group: 'Azure Release - Global values' # Contains the values for uploading to Azure
+
+stages:
+- stage: Build
+  jobs:
+  - template: AzDO/Yaml/Jobs/PublishTemplateSpecs.yml@yamlTemplates
+    parameters:
+      templateFolder: "/Azure/Arm&Bicep"
+      resourceGroupName: "TemplateSpecs2"
+      resoureGrouplocation: $(defaultAzureLocation)
+      azureSubscriptionName: $(defaultAzureSubscriptionName)
