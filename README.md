@@ -1,17 +1,9 @@
-1. **About the application.**
+# Introduction
+Reuseable templates for Azure deployments
 
-    _TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project._
+<br clear="left"/>
 
-1. **Getting Started**  
-   TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-      1.	Installation process
-      2.	Software dependencies
-      3.	Latest releases
-      4.	API references
-
-
-1. **Build and Test**  
-   _TODO: Describe and show how to build your code and run the tests._
-
-1. **Contribute**  
-   _TODO: Explain how other users and developers can contribute to this repo._
+## Repo Guidelines
+- Documentation specific for this repo should be kept in [Markdown](https://www.markdownguide.org/getting-started/)-textfiles in the [/docs](docs) folder. 
+- New users of the repository should start by checking the instructions in [Getting Started](docs/Getting-Started.md) 
+- A log of architectural decisions is kept in the [docs/Architectural Decision Records](docs/ADRs-%252D-Architectural-Decision-Records.md) folder. 
