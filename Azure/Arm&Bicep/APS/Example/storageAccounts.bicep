@@ -6,17 +6,12 @@ param location string
 @maxLength(24)
 param instanceName string
 
-resource MyComponentIdentifierName 'Microsoft.Storage/storageAccounts@2022-05-01' = {
-  name: instanceName
-  location: location
-  // tags: {
-  //   tagName1: 'tagValue1'
-  //   tagName2: 'tagValue2'
-  // }
-  sku: {
-    name: 'Standard_LRS'
+module MyComponentIdentifierName './../../Microsoft/Storage/storageAccounts.bicep' = {
+  name: 'StorageAccountDeployment'
+  params: {
+    location: location
+    instanceName: instanceName
   }
-  kind: 'StorageV2'
 }
 
 output MyOutputName string = MyComponentIdentifierName.name
