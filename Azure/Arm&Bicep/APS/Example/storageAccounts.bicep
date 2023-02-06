@@ -14,4 +14,4 @@ module MyComponentIdentifierName './../../Microsoft/Storage/storageAccounts.bice
   }
 }
 
-output MyOutputName string = MyComponentIdentifierName.name
+output MyOutputName2 string = MyComponentIdentifierName.name
