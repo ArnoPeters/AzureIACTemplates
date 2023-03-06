@@ -1,3 +1,4 @@
 {
     // Custom workspace settings for visual studio code.
+    "explorer.copyRelativePathSeparator" : "/"
 }
