@@ -1,7 +1,7 @@
 next-version: 0.1.0
 assembly-versioning-scheme: MajorMinorPatch
 assembly-file-versioning-format: '{env:BUILD_BUILDNUMBER}'
-assembly-informational-format: '{MajorMinorPatch}{env:VERSIONING_PRERELEASELABELWITHDASH}'
+assembly-informational-format: '{MajorMinorPatch}{env:VERSIONING_PRERELEASELABELWITHDASH}' # this is actually sanitized again - underscores become dashes!
 mode: ContinuousDelivery #https://gitversion.readthedocs.io/en/latest/input/docs/reference/versioning-modes/versioning-mode/ #Used to compute version until tagged
 increment: Inherit
 
