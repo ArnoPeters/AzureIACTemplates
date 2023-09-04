@@ -1,0 +1,116 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "environment": {
+      "type": "string",
+      "allowedValues": [ "d", "a", "p", "e" ],
+      "metadata": {
+        "description": "One-letter identifier for the target environment of this resource."
+      }
+    },
+    "deploymentDateTimeStamp": {
+      "type": "string",
+      "metadata": {
+        "description": "Required to create unique names and prevent Azure from overwriting the history of linked template deployments "
+      }
+    },
+    "ownerTeam": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the team that is responsible for the created resource instance. Shows up as tag 'team' in Azure"
+      }
+    },
+    "tags": {
+      "defaultValue": {},
+      "type": "object",
+      "metadata": {
+        "description": "Optional. Any tags that should be added to this resource."
+      }
+    },
+    "configStoreNameSuffix": { //TODO: This should be renamed to configStoreName. 
+      "type": "string",
+      "metadata": {
+        "description": "Base name (without prefix or suffix) of the config store."
+      }
+    },
+    "settings": { //TODO: This should be renamed to 'keys'. 
+      "type": "array",
+      "metadata": {
+        "description": "Specifies the keys that should be added to the config, and their corresponding values."
+      }
+    },
+    "KeyVaultSecretReferences": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Accepts an array of keys, with the value to be a reference to a specific secret in a Keyvault. Json for a key: { \"configKey\": \"your-keyname\", \"secretName\": \"name-of-the-secret-in-keyvault\" }"
+      }
+    }
+  },
+  "variables": {
+    "tags": {
+      "team": "[parameters('ownerTeam')]"
+    },
+    "instanceName": "[format('ar{0}cfg{1}', parameters('environment'), parameters('configStoreNameSuffix'))]",
+    "deployments": {
+      "settings": {
+        "name": "[take(format('{0}-{1}',parameters('deploymentDateTimeStamp'),'appconfig-add-keys'),64)]",
+        "keyVaultName": "[format('aps-{0}-kv-ops', parameters('environment'))]" //TODO: function template / shared template that outputs all shared resources
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.AppConfiguration/configurationStores",
+      "apiVersion": "2020-06-01",
+      "name": "[variables('instanceName')]",
+      "location": "[parameters('location')]",
+      "tags": "[union(variables('tags'), parameters('tags'))]",
+      "sku": {
+        "name": "standard"
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {}
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "condition": "[not(empty(parameters('settings')))]",
+      "name": "[variables('deployments').settings.name]",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "relativePath": "configurationStores.keyValues.json"
+        },
+        "parameters": {
+          "configStoreName": { "value": "[variables('instanceName')]" },
+          "keyVaultName": { "value": "[ variables('deployments').settings.keyVaultName]" },
+          "keys": { "value": "[ parameters('settings')]" },
+          "keyVaultSecretReferences": { "value": "[ parameters('keyVaultSecretReferences')]" }
+        }
+      },
+      "dependsOn": [
+        "[variables('instanceName')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "instanceName": {
+      "type": "string",
+      "value": "[variables('instanceName')]",
+      "metadata": {
+        "description": "Full instance name of the resource including pre- and suffixes."
+      }
+    }
+  }
+}

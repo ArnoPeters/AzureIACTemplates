@@ -1,0 +1,72 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "configStoreName": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the name of the App Configuration store."
+      }
+    },
+    "keys": {
+      "type": "array",
+      "metadata": {
+        "description": "Specifies the keys that should be added to the config, and their corresponding values."
+      }
+    },
+    "keyVaultSecretReferences": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Accepts an array of keys, with the value to be a reference to a specific secret in the KV-OPS Keyvault. Json for a key: { \"configKey\": \"your-keyname\", \"secretName\": \"name-of-the-secret-in-keyvault\" }"
+      }
+    },
+    "keyvaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the name of the Keyvault containing the references."
+      },
+      "defaultValue": ""
+    }
+  },
+  "variables": {
+    "copy": [
+      {
+        "name": "keyVaultReferences",
+        "count": "[length(parameters('keyVaultSecretReferences'))]",
+        "input": {
+          "key": "[parameters('keyVaultSecretReferences')[copyIndex('keyVaultReferences')].configKey]",
+          "value": "[string(createObject('uri',format('https://{0}.vault.azure.net/secrets/{1}',parameters('keyvaultName'),parameters('keyVaultSecretReferences')[copyIndex('keyVaultReferences')].secretName)))]",
+          "contentType": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8"
+        },
+        "mode": "parallel"
+      }
+    ],
+    "allKeys": "[union(parameters('keys'),variables('keyVaultReferences'))]"
+  },
+  "resources": [
+    {
+      "condition": "[not(empty(variables('allKeys')))]",
+      "type": "Microsoft.AppConfiguration/configurationStores/keyValues",
+      "apiVersion": "2021-10-01-preview",
+      "name": "[format('{0}/{1}',parameters('configStoreName'), variables('allKeys')[copyIndex()].key)]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "value": "[variables('allKeys')[copyIndex()].value]",
+        "contentType": "[if(contains(variables('allKeys')[copyIndex()], 'contentType'), variables('allKeys')[copyIndex()].contentType, '')]"
+      },
+      "copy": {
+        "name": "keys",
+        "count": "[length(variables('allKeys'))]",
+        "mode": "parallel"
+      }
+    }
+  ]
+}
