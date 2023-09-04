@@ -1,0 +1,81 @@
+// ---- Standard parameters
+
+@description('Location for the resources in this module.')
+param location string
+
+@description('Use \'outputs.tags\' from the \'resourceGroup\' module.')
+param tags object
+
+@description('Optional. Is displayed next to the resource name in Azure. Makes uses of the undocumented \'hidden-title\' tag.')
+param displayName string = ''
+
+@description('Use \'outputs.instanceNameFormat\' from the \'resourceGroup\' module.')
+param instanceNameFormat string
+
+// ---- Template specific parameters
+
+@description('The sku of the public IP addresses.')
+@allowed([
+	'Basic'
+	'Standard'
+])
+param publicIPAddressSku string = 'Standard'
+
+@allowed([
+	'IPv4'
+	'IPv6'
+])
+param publicIPAddressVersion string
+
+param prefixInstanceName string
+@allowed([
+	'Dynamic'
+	'Static'
+])
+param publicIPAllocationMethod string
+param idleTimeoutInMinutes int
+param fqdnSuffix string = '.westeurope.cloudapp.azure.com' //todo no default + add description
+
+// ---- Deployment
+
+@description('https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-abbreviations')
+var instanceName = format(instanceNameFormat, 'pip')
+
+var fullTags = empty(displayName) ? tags : union(tags, { 'hidden-title': displayName })
+
+var fqdn =  '${instanceName}${fqdnSuffix}' //todo
+
+resource publicIPprefixes 'Microsoft.Network/publicIPprefixes@2018-07-01' existing = {
+	name: prefixInstanceName
+}
+
+resource publicIPAddresses 'Microsoft.Network/publicIPAddresses@2023-04-01' = {
+	name: instanceName
+	tags: fullTags
+	location: location
+	sku: {
+		name: publicIPAddressSku
+	}
+	properties: {
+		publicIPAllocationMethod: publicIPAllocationMethod
+		idleTimeoutInMinutes: idleTimeoutInMinutes
+		publicIPAddressVersion: publicIPAddressVersion
+		dnsSettings: {
+			domainNameLabel: TODO //should this be same as instanceName?
+			fqdn: fqdn
+		}
+		ipTags: []
+		publicIPPrefix: {
+			id: publicIPprefixes.id
+		}
+	}
+}
+
+// ---- Standard outputs 
+
+@description('Full instance name of the resource.')
+output instanceName string = instanceName
+
+// ---- Template specific outputs
+
+output ipAddress string = publicIPAddresses.properties.ipAddress
