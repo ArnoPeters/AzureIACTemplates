@@ -1,0 +1,106 @@
+@minLength(3)
+@maxLength(24)
+@description('Name of the resource. Must be between 3 and 24 characters in length and use numbers and lower-case letters only.')
+param instanceName string
+
+@description('Required to create unique names and prevent Azure from overwriting the history of linked template deployments')
+param deploymentDateTimeStamp string
+
+// //deploy empty before any backup policy is set, because it overrides the soft delete settings
+// param blobSoftDeleteDays int
+// param containerDeleteRetentionPolicy int = 0
+
+// var x = containerDeleteRetentionPolicy > 0? : 
+
+@description('Instance name of the backup vault.')
+param backupVaultInstanceName string
+
+param backupVaultResourceGroup string
+
+param backupPolicyName string
+
+// resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+//   name: instanceName
+
+// }
+
+// @description('https://learn.microsoft.com/en-us/azure/templates/microsoft.storage/storageaccounts/blobservices?pivots=deployment-language-bicep#blobservicepropertiesproperties')
+// var properties = empty(corsRules) ? {} : {
+//   cors: {
+//     corsRules: corsRules
+//   }
+// }
+
+//2. Read current settings
+resource existingStorageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  name: instanceName
+
+}
+
+//1. Configure backup. This will set defaults to the blobservices properties based on the chosen backup policy. 
+module containerBackup '../../Dataprotection/backupVaults_AddBlobServices.bicep' = if (!empty(backupPolicyName)) {
+  name: take('${existingStorageAccount.name}-containerBackup', 64)
+  scope: resourceGroup(backupVaultResourceGroup)
+  params: {
+    backupPolicyName: backupPolicyName
+    backupVaultInstanceName: backupVaultInstanceName
+    deploymentDateTimeStamp: deploymentDateTimeStamp
+    storageAccountInstanceName: existingStorageAccount.name
+    storageAccountResourceGroupName: resourceGroup().name
+  }
+}
+
+//2. Read current settings
+param pitDays int = -1
+
+
+
+var z = containerBackup.outputs.currentProperties
+//TODO: Settings should come from module. Then merge. Otherwise circleref occurs. 
+
+@description('https://learn.microsoft.com/en-us/azure/templates/microsoft.storage/storageaccounts/blobservices?pivots=deployment-language-bicep#blobservicepropertiesproperties')
+var updatedProperties = {
+  //automaticSnapshotPolicyEnabled: z.automaticSnapshotPolicyEnabled
+  changeFeed: {
+    enabled: z.changeFeed.enabled //doestn work the first time around as it is NOT SET and this read BEFORE the deployment of the backup >.<
+  }
+  deleteRetentionPolicy: {
+    allowPermanentDelete: z.deleteRetentionPolicy.allowPermanentDelete
+    days: z.deleteRetentionPolicy.days
+    enabled: z.deleteRetentionPolicy.enabled
+  }
+  isVersioningEnabled: z.isVersioningEnabled
+  restorePolicy: pitDays == -1 ? {
+    days: z.restorePolicy.days
+    enabled: z.restorePolicy.enabled
+  } : {
+    days: max(min(z.deleteRetentionPolicy.days - 1, pitDays), 0) 
+    enabled: z.restorePolicy.enabled
+  }
+  // containerDeleteRetentionPolicy: {
+  //   allowPermanentDelete: z.containerDeleteRetentionPolicy.allowPermanentDelete
+  //   days: z.containerDeleteRetentionPolicy.days
+  //   enabled: z.containerDeleteRetentionPolicy.enabled
+  // }
+  // deleteRetentionPolicy: {
+  //   allowPermanentDelete: z.deleteRetentionPolicy.allowPermanentDelete
+  //   days: z.deleteRetentionPolicy.days
+  //   enabled: z.deleteRetentionPolicy.enabled
+  // }
+  // isVersioningEnabled: z.isVersioningEnabled
+  // restorePolicy: {
+  //   days: z.restorePolicy.days
+  //   enabled: z.restorePolicy.enabled
+  // }
+}
+
+//3. Override responsibly if new settings are exceeding backup settings
+resource updatedStorageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  name: instanceName
+
+  resource blobServices 'blobServices' = {
+    name: 'default'
+    properties: updatedProperties
+    dependsOn: [ containerBackup ]
+  }
+}
