@@ -28,6 +28,6 @@ stages:
   - template: AzDO/yaml/jobs/azure-publishTemplateSpecs.yml@yamlTemplates
     parameters:
       templateFolder: "Azure/Arm&Bicep"
-      resourceGroupName: "TemplateSpecs"
+      resourceGroupName: "aps-deployment-rg"
       resoureGrouplocation: $(defaultAzureLocation)
       azureSubscriptionName: $(defaultAzureSubscriptionName)
