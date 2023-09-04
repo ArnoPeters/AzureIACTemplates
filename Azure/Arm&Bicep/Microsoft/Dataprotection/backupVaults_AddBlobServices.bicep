@@ -37,7 +37,7 @@ module storageAccountBackupContributor '../Storage/storageAccounts_roleAssignmen
   params: {
     roleDefinitionId: roleDefinitionIds.builtin.StorageAccountBackupContributor
     principalId: backupVault.identity.principalId
-    instanceName: storageAccount.name
+    storageAccountInstanceName: storageAccount.name
   }
 }
 
