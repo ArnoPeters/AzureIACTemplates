@@ -1,11 +1,11 @@
 targetScope = 'subscription'
 
-// The code below is based on the code found in Barbara Forbes's blog: 
+// The code below is based on and inspired by the code found in Barbara Forbes's blog: 
 // https://4bes.nl/2022/01/16/build-and-test-an-azure-tagging-strategy-in-bicep/
 // https://4bes.nl/2021/10/10/get-a-consistent-azure-naming-convention-with-bicep-modules/
 // 
 //
-// The most interesting issue that Barbara  addresses is that you cannot create resources directly with the naming format from an output: 
+// The most interesting issue that Barbara addresses is that you cannot create resources directly with the naming format from an output: 
 // Bicep requires names to be known on compile time, not runtime. This is also true for any Scope set on a resource. 
 // Therefore resource groups are treated specially and no naming output is generated because it would currently not be properly usable. 
 // Any other resources should be created in modules which do allow using parameters for passing of instance names based on the output of this template.
@@ -13,21 +13,17 @@ targetScope = 'subscription'
 @description('Do not override - auto generates a date stamp for the tags. ')
 param deploymentDate string = utcNow('yyyy-MM-dd')
 
+@description('Information to identify the owner of the resources.')
+param owner {
+  @secure()
+  @description('The contact email of the group or person that is responsible for the created resource instances.')
+  contactEmail: string
 
-@description('Specifies the location for the resource group.')
-param location string
-
-
-@description('Optional. Any extra tags that should be added to the resources.')
-param tags {
-  @minLength(1)
-  *: string
+  @minLength(0)
+  @maxLength(5)
+  @description('Short code (1 to 5 chars) to be used as prefix for resources to identify the owner.')
+  namingPrefix: string
 }
-
-@secure()
-@description('The contact email of the group or person that is responsible for the created resource instances.')
-param ownerContactEmail string
-
 
 type environmentString = '' | 'd' | 'a' | 'p'
 
@@ -35,27 +31,27 @@ type environmentString = '' | 'd' | 'a' | 'p'
 param context {
   @description('The environment that these resources are deployed to.')
   environment: environmentString
-
+  
   @description('Name to identify the shared purpose of the resources.')
   partOf: string
-
-  @minLength(0)
-  @maxLength(5)
-  @description('Short code (1 to 5 chars) to be used as prefix to group the resources. Example: a short code for the owner.')
-  namingPrefix: string
-
+  
   @minLength(0)
   @maxLength(5)
   @description('Short code (1 to 5 chars) identify the shared purpose of the resources. Takes the first 5 parts of \'partOf\' if omitted ')
   partOfAbbreviation: string?
-
+  
   @description('Optional. The costcenter for the resources.') //It is also suggested to use the subscription to seperate out the cost center as this makes setting budget tresholds easier.
   costCenter: string?
 }
 
+@description('Optional. Any extra tags that should be added to the resources.')
+param additionalTags object
+
 @description('An index number. This enables you to have some sort of versioning or to create redundancy')
 param index int = 0
 
+@description('Specifies the location for the resource group.')
+param location string
 
 @description('The name of the resource group. Determine this in the calling module because scope() attributes that would target the resource group won\'t work with outputs anyway.')
 param resourceGroupName string
@@ -67,16 +63,15 @@ var indexSuffix = (index == 0 ? '' : '-${padLeft(index, 2, '0')}')
 // There is a risk to doing at this way, as results might be non-desirable.
 // Can be overridden using the partOfAbbreviation parameter. 
 var partOfShort = empty(context.partOfAbbreviation) ? take(context.partOf, 5) : context.partOf
-var ownerPrefixShort = take(context.namingPrefix, 5)
 var environmentInfix = empty(context.environment) ? '' : '-${context.environment}'
 
 var formatInfo = {
-  instanceName: '${context.namingPrefix}${environmentInfix}-${context.partOf}-{0}${indexSuffix}'
-  instanceNameShort: '${context.namingPrefix}${environmentInfix}-${partOfShort}-{0}${indexSuffix}'
+  instanceName: '${owner.namingPrefix}${environmentInfix}-${context.partOf}-{0}${indexSuffix}'
+  instanceNameShort: '${owner.namingPrefix}${environmentInfix}-${partOfShort}-{0}${indexSuffix}'
   // Storage accounts have specific limitations. The correct convention is created here
-  storageAccountNameFormat: '${toLower(context.namingPrefix)}${toLower(context.environment)}${toLower(partOfShort)}sta${indexSuffix}'
+  storageAccountNameFormat: '${toLower(owner.namingPrefix)}${toLower(context.environment)}${toLower(partOfShort)}sta${indexSuffix}'
   // VM names create computer names. These can be a max of 15 characters. So a different structure is required
-  vmName: take('${ownerPrefixShort}${context.environment}${partOfShort}${indexSuffix}', 15)
+  vmName: take('${take(owner.namingPrefix, 3)}${context.environment}${partOfShort}${indexSuffix}', 15)
 }
 
 var environmentInfo = {
@@ -85,7 +80,7 @@ var environmentInfo = {
 }
 
 var baseTagsObject = {
-  Owner: toLower(ownerContactEmail)
+  Owner: toLower(owner.contactEmail)
   Environment: environmentInfo.shortName
   DeploymentDate: deploymentDate
   PartOf: '${toUpper(take(context.partOf, 1))}${skip(context.partOf, 1)}' //auto-caps for first letter of PartOf
@@ -128,11 +123,11 @@ output environment {
 } = environmentInfo
 
 @description('Tags that should be applied to all resources that are PartOf the same purpose, and any additional tags that were provided.')
-output resourceTags {
+output tags {
   Owner: string
   Environment: string
   DeploymentDate: string
   PartOf: string
   //*: string
   #disable-next-line outputs-should-not-contain-secrets //Email is not exactly a secret, but it may come from from keyvault and then @secure is mandatory
-} = union(tags, tagsObject) //by setting 'tags' first in the union, the other properties of the 'tagsobject' will not be overwritten
+} = union(additionalTags, tagsObject) //by setting 'tags' first in the union, the other properties of the 'tagsobject' will not be overwritten

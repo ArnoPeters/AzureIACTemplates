@@ -9,7 +9,7 @@ param tags object
 @description('Optional. Is displayed next to the resource name in Azure. Makes uses of the undocumented \'hidden-title\' tag.')
 param displayName string = ''
 
-@description('Use \'outputs.instanceNameFormat\' from the \'resourceGroup\' module.')
+@description('Use \'outputs.formats.instanceName\' from the \'resourceGroup\' module.')
 param instanceNameFormat string
 // ---- Template specific parameters
 

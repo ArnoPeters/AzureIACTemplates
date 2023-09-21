@@ -1,0 +1,68 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"keyVaultAccessPolicies": {
+			"value": [
+				{
+					"objectId": "8cc85493-5886-4ade-ae84-84d617066ee7", //Arno //currently no way to get this in objectId from AAD in Bicep / ARM
+					"permissions": {
+						"keys": [
+							"Get",
+							"List",
+							"Update",
+							"Create",
+							"Import",
+							"Delete",
+							"Recover",
+							"Backup",
+							"Restore",
+							"Decrypt",
+							"Encrypt",
+							"UnwrapKey",
+							"WrapKey",
+							"Verify",
+							"Sign",
+							"Purge"
+						],
+						"secrets": [
+							"Get",
+							"List",
+							"Set",
+							"Delete",
+							"Recover",
+							"Backup",
+							"Restore",
+							"Purge"
+						],
+						"certificates": [
+							"Get",
+							"List",
+							"Update",
+							"Create",
+							"Import",
+							"Delete",
+							"Recover",
+							"Backup",
+							"Restore",
+							"ManageContacts",
+							"ManageIssuers",
+							"GetIssuers",
+							"ListIssuers",
+							"SetIssuers",
+							"DeleteIssuers",
+							"Purge"
+						]
+					}
+				}
+			]
+		}
+		// ,
+		// "keyvaultSecretsPlaceholders": {
+		// 	"value": [
+		// 		"SomePlaceholder", 
+		// 		"ownerContactEmail"
+		// 	]
+		// }
+	}
+}
