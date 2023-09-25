@@ -1,3 +1,14 @@
+@export()
+type accessPolicy = {
+  @description('Target principalId')
+  objectId: string
+  permissions: {
+    keys: array?
+    secrets: array? 
+    certificates: array?
+  }
+} 
+
 @description('Keyvault instance name')
 param keyVaultInstanceName string
 
@@ -11,7 +22,7 @@ param keyVaultInstanceName string
 param deploymentMode string = 'add'
 
 @description('Requires an object [{ "objectId": "[your-identity.principalId]", "permissions": { "keys": [], "secrets": [ "Get" ], "certificates": [ ] } }]')
-param accessPolicies array 
+param accessPolicies accessPolicy[] 
 
 @description('Ensure that all policies have the correct tenant. Upload will fail otherwise.')
 var fixedAccessPolicies = [for item in accessPolicies: {

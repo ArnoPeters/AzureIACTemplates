@@ -83,3 +83,19 @@ resource resourceLock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty(de
 output instanceName string = instanceName
 
 // ---- Template specific outputs
+
+output hostNames {
+  blob: string
+  dfs: string
+  file: string
+  queue: string
+  table: string
+  web: string
+} = {
+  blob: replace(replace(storageAccount.properties.primaryEndpoints.blob, '/', ''), 'https:', '')
+  dfs: replace(replace(storageAccount.properties.primaryEndpoints.dfs, '/', ''), 'https:', '')
+  file: replace(replace(storageAccount.properties.primaryEndpoints.file, '/', ''), 'https:', '')
+  queue: replace(replace(storageAccount.properties.primaryEndpoints.queue, '/', ''), 'https:', '')
+  table: replace(replace(storageAccount.properties.primaryEndpoints.table, '/', ''), 'https:', '')
+  web: replace(replace(storageAccount.properties.primaryEndpoints.web, '/', ''), 'https:', '')
+}
