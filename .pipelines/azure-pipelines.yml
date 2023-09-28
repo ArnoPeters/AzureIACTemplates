@@ -7,7 +7,6 @@ trigger:
   paths:
     include: 
     - '/Azure/Arm&Bicep/*'
-    - '.pipelines/*'
     exclude:
     - '/.vscode/*'
     - '/*.md'
@@ -34,4 +33,3 @@ stages:
       resourceGroupName: "aps-deployment-rg"
       resoureGrouplocation: $(defaultAzureResourceLocation)
       azureServiceConnectionName: $(azureServiceConnectionName)
-      
