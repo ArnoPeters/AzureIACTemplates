@@ -4,8 +4,7 @@ targetScope = 'subscription'
 // https://4bes.nl/2022/01/16/build-and-test-an-azure-tagging-strategy-in-bicep/
 // https://4bes.nl/2021/10/10/get-a-consistent-azure-naming-convention-with-bicep-modules/
 // 
-//
-// The most interesting issue that Barbara  addresses is that you cannot create resources directly with the naming format from an output: 
+// The most interesting issue that Barbara addresses is that you cannot create resources directly with the naming format from an output: 
 // Bicep requires names to be known on compile time, not runtime. This is also true for any Scope set on a resource. 
 // Therefore resource groups are treated specially and no naming output is generated because it would currently not be properly usable. 
 // Any other resources should be created in modules which do allow using parameters for passing of instance names based on the output of this template.
