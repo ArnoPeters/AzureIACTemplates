@@ -14,7 +14,7 @@ resources:
   - repository: yamlTemplates
     type: github
     endpoint: ArnoPeters
-    name: "ArnoPeters/Pipelines"
+    name: "ArnoPeters/Starterkit_AzureDevops"
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -25,9 +25,9 @@ variables:
 stages:
 - stage: Build
   jobs:
-  - template: AzDO/yaml/jobs/azure-publishTemplateSpecs.yml@yamlTemplates
+  - template: yaml/jobs/Azure/publishTemplateSpecs.yml@yamlTemplates
     parameters:
       templateFolder: "Azure/Arm&Bicep"
       resourceGroupName: "aps-deployment-rg"
-      resoureGrouplocation: $(defaultAzureLocation)
-      azureSubscriptionName: $(defaultAzureSubscriptionName)
+      resoureGrouplocation: $(defaultAzureResourceLocation)
+      azureServiceConnectionName: $(azureServiceConnectionName)
