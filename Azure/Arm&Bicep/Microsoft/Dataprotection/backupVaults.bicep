@@ -81,7 +81,6 @@ resource vault 'Microsoft.DataProtection/backupVaults@2023-01-01' = {
 //   }
 // }
 
-
 // ---- Standard outputs 
 
 @description('Full instance name of the resource.')

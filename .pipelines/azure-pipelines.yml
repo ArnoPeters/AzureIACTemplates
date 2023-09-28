@@ -35,7 +35,7 @@ variables:
 stages:
 - stage: Build
   jobs:
-  - template: yaml/jobs/Azure/publishTemplateSpecs.yml@yamlTemplates
+  - template: yaml/jobs/Azure/uploadTemplateSpecs.yml@yamlTemplates
     parameters:
       templateFolder: "Azure/Arm&Bicep"
       resourceGroupName: "aps-deployment-rg"
