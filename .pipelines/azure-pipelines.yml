@@ -1,4 +1,12 @@
 name: $(date:yyyy.M.d)$(rev:.r)
+
+parameters:
+- name: 'forceUploadAll'
+  displayName: 'Force upload of all modules'
+  type: boolean
+  default: false  
+  
+
 trigger:
   batch: 'true'
   branches:
@@ -33,3 +41,4 @@ stages:
       resourceGroupName: "aps-deployment-rg"
       resoureGrouplocation: $(defaultAzureResourceLocation)
       azureServiceConnectionName: $(azureServiceConnectionName)
+      forceUploadAll: ${{ parameters.forceUploadAll }}
