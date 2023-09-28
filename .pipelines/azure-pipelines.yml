@@ -5,9 +5,12 @@ trigger:
     include:
     - main
   paths:
+    include: 
+    - '/Azure/Arm&Bicep/*'
+    - '.pipelines/*'
     exclude:
-    - /.vscode/*
-    - /*.md
+    - '/.vscode/*'
+    - '/*.md'
 
 resources:
   repositories:
